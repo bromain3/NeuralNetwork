@@ -58,6 +58,24 @@ class NeuralNetwork:
         accuracy = self.accuracy.calculate(self.activationFunctions[-1].output, y)
         return(self.activationFunctions[-1].output, loss, accuracy)
 
+    def predict(self, inputs):
+        """
+        # not tested
+        if len(self.layers) == 1:
+
+        """
+        if len(self.layers) == 1:
+            pass
+        else:
+            self.layers[0].forward(inputs)
+            self.activationFunctions[0].forward(self.layers[0].output)
+            for i in range(1, len(self.layers) - 1):
+                self.layers[i].forward(self.activationFunctions[i - 1].output)
+                self.activationFunctions[i].forward(self.layers[i].output)
+            self.layers[-1].forward(self.activationFunctions[-2].output)
+            self.activationFunctions[-1].forward(self.layers[-1].output, np.zeros_like(self.layers[-1].output))
+        return (self.activationFunctions[-1].output)
+
     def backward(self, output, y):
         """
         # not tested
@@ -142,6 +160,6 @@ if __name__ == "__main__":
     nn.setActivationFunction(1, af.ReLU())
     nn.setActivationFunction(2, lf.CombinedSoftmaxCrossEntropy())
 
-    nn.setAcuracyFunction(lf.Accuracy())
+    nn.setAcuracyFunction(lf.SoftmaxClassificationAccuracy())
 
     nn.setOptimizerFunction(opt.AdaptativeMomentum())

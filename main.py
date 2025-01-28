@@ -17,7 +17,7 @@ def create_data(points, classes):
         y[ix] = class_number
     return (X, y)
 
-accuracy = lf.Accuracy()
+accuracy = lf.SoftmaxClassificationAccuracy()
 X, y = create_data(100, 3)
 #X = np.linspace(-5,5,100000)
 #y = np.sin(X)
@@ -39,7 +39,7 @@ activation2 = lf.CombinedSoftmaxCrossEntropy()
 optimizer = opt.AdaptativeMomentum(learningRate=0.02, decay=1e-5)
 
 L = []
-for i in range(10000):
+for i in range(100):
     dense1.forward(X)
     activation1.forward(dense1.output)
     dense2.forward(activation1.output)
@@ -67,4 +67,19 @@ for i in range(10000):
 
 
 plt.plot(L)
+plt.show()
+
+X = np.linspace(-5, 5, 100000).reshape((100000,1))
+y = np.sin(X)
+plt.plot(X, y)
+plt.show()
+import NeuralNetwork as nn
+a = nn.NeuralNetwork(1,1, [64])
+a.setActivationFunction(0, af.ReLU())
+a.setActivationFunction(1, lf.combinedLinearMeanSquaredError())
+a.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.002, decay=1e-3))
+a.setAcuracyFunction(lf.LinearRegressionAccuracy())
+a.train(X, y, 100, 100000)
+plt.plot(X, y)
+plt.plot(X, a.predict(X))
 plt.show()

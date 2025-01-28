@@ -118,16 +118,16 @@ import Optimizer as opt
 import NeuralNetwork as nn
 
 
-neural = nn.NeuralNetwork(784, 10, [256,256])
+neural = nn.NeuralNetwork(784, 10, [30,30])
 neural.setActivationFunction(0, af.ReLU())
 neural.setActivationFunction(1, af.ReLU())
 neural.setActivationFunction(2, lf.CombinedSoftmaxCrossEntropy())
-neural.setAcuracyFunction(lf.Accuracy())
-#neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3)) # 97.4% accuracy for 10 epochs with big batch for each period
-neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3))
+neural.setAcuracyFunction(lf.SoftmaxClassificationAccuracy())
+#neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3)) # 97.4% accuracy for 10 epochs with big batch for each period (two 128 neuron hidden layers)
+neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3))  # 96.08% accuracy for 30-50 epochs with big batch for each period (two 30 neuron hidden layers)
 
 
-L, A, Lr = neural.train(x_train_formated, y_train, 10,bigBatchSize='all')
+L, A, Lr = neural.train(x_train_formated, y_train, 50,bigBatchSize='all')
 
 
 
@@ -158,7 +158,7 @@ activation2 = af.ReLU()
 dense3 = nl.NeuronLayer(256, 10)
 activation3 = lf.CombinedSoftmaxCrossEntropy()
 optimizer = opt.AdaptativeMomentum(learningRate=0.02, decay=1e-5)
-accuracy = lf.Accuracy()
+accuracy = lf.SoftmaxClassificationAccuracy()
 
 BATCH_SIZE = 128
 steps = x_train_formated.shape[0] // BATCH_SIZE
