@@ -36,7 +36,7 @@ dense1 = nl.NeuronLayer(2, 64)
 activation1 = af.ReLU()
 dense2 = nl.NeuronLayer(64, 3)
 activation2 = lf.CombinedSoftmaxCrossEntropy()
-optimizer = opt.RMSPropagation(learningRate=0.02, decay=1e-5, rho=0.999)
+optimizer = opt.AdaptativeMomentum(learningRate=0.02, decay=1e-5)
 
 L = []
 for i in range(10000):

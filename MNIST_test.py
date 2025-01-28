@@ -81,11 +81,21 @@ mnist_dataloader = MnistDataloader(training_images_filepath, training_labels_fil
 #
 # Show some random training and test images
 #
+
 x_train_formated = []
 for i in x_train:
     x_train_formated.append(np.array(i).flatten())
-x_train_formated = np.array(x_train_formated)
+x_train_formated = np.array(x_train_formated).astype('float64')
+x_train_formated -= (np.max(x_train_formated) + np.min(x_train_formated)) / 2
+x_train_formated /= (np.max(x_train_formated) - np.min(x_train_formated)) / 2
+print(np.max(x_train_formated), np.min(x_train_formated))
 y_train = np.array(y_train)
+
+keys = np.array(range(x_train_formated.shape[0]))
+np.random.shuffle(keys)
+x_train_formated = x_train_formated[keys]
+y_train = y_train[keys]
+
 images_2_show = []
 titles_2_show = []
 for i in range(0, 10):
@@ -105,48 +115,122 @@ import NeuronLayer as nl
 import ActivationFunctions as af
 import LossFunctions as lf
 import Optimizer as opt
+import NeuralNetwork as nn
 
+
+neural = nn.NeuralNetwork(784, 10, [256,256])
+neural.setActivationFunction(0, af.ReLU())
+neural.setActivationFunction(1, af.ReLU())
+neural.setActivationFunction(2, lf.CombinedSoftmaxCrossEntropy())
+neural.setAcuracyFunction(lf.Accuracy())
+#neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3)) # 97.4% accuracy for 10 epochs with big batch for each period
+neural.setOptimizerFunction(opt.AdaptativeMomentum(learningRate=0.005, decay=1e-3))
+
+
+L, A, Lr = neural.train(x_train_formated, y_train, 10,bigBatchSize='all')
+
+
+
+
+x_test_formated = []
+for i in x_test:
+    x_test_formated.append(np.array(i).flatten())
+x_test_formated = np.array(x_test_formated).astype('float64')
+x_test_formated -= (np.max(x_test_formated) + np.min(x_test_formated)) / 2
+x_test_formated /= (np.max(x_test_formated) - np.min(x_test_formated)) / 2
+print(np.max(x_test_formated), np.min(x_test_formated))
+y_test = np.array(y_test)
+
+result, loss, acc = neural.testNetwork(x_test_formated, y_test)
+
+print(result, loss, acc)
+
+titles_2_show.append('test image [' + str(0) + '] = ' + str(y_test[0]))
+plt.imshow(x_test[0], cmap=plt.cm.gray)
+plt.show()
+print(list(result[0]), np.max(result[0]), list(result[0]).index(max(result[0])))
+
+"""
 dense1 = nl.NeuronLayer(784, 256)
 activation1 = af.ReLU()
 dense2 = nl.NeuronLayer(256, 256)
 activation2 = af.ReLU()
 dense3 = nl.NeuronLayer(256, 10)
 activation3 = lf.CombinedSoftmaxCrossEntropy()
-optimizer = opt.StochasticGradientDescent(learningRate=3,decay=1e-3,momentum=0.8)
+optimizer = opt.AdaptativeMomentum(learningRate=0.02, decay=1e-5)
 accuracy = lf.Accuracy()
 
+BATCH_SIZE = 128
+steps = x_train_formated.shape[0] // BATCH_SIZE
+if steps * BATCH_SIZE < x_train_formated.shape[0]:
+    steps += 1
+epoch = 10
+
+
 L = []
-for i in range(int(60000/32)):
-    dense1.forward(x_train_formated[32*i:32*(i+1)])
+for i in range(epoch):
+    for step in range(steps):
+        batchX = x_train_formated[step * BATCH_SIZE:(step + 1) * BATCH_SIZE]
+        batchy = y_train[step * BATCH_SIZE:(step + 1) * BATCH_SIZE]
+        dense1.forward(batchX)
+        activation1.forward(dense1.output)
+        dense2.forward(activation1.output)
+        activation2.forward(dense2.output)
+        dense3.forward(activation2.output)
+        loss = activation3.forward(dense3.output, batchy)
+        acc = accuracy.calculate(activation3.output, batchy)
+        #print(acsm2.output, loss)
+
+        activation3.backward(activation3.output, batchy)
+        dense3.backward(activation3.inputGradient)
+        activation2.backward(dense3.inputGradient)
+        dense2.backward(activation2.inputGradient)
+        activation1.backward(dense2.inputGradient)
+        dense1.backward(activation1.inputGradient)
+        #print(smLayer.inputGradient)
+
+        optimizer.preUpdateParams()
+        optimizer.updateParams(dense1)
+        optimizer.updateParams(dense2)
+        optimizer.updateParams(dense3)
+        optimizer.postUpdateParams()
+
+        if step%100 == 0:
+            print('loss:', loss)
+            print('acc:', acc)
+            print('epoch:', i)
+            print('step:', step)
+            print('learning rate:', optimizer.currentLearningRate)
+            L.append(loss)
+    '''
+    dense1.forward(x_train_formated)
     activation1.forward(dense1.output)
     dense2.forward(activation1.output)
     activation2.forward(dense2.output)
     dense3.forward(activation2.output)
-    loss = activation3.forward(dense3.output, y_train[32*i:32*(i+1)])
-    acc = accuracy.calculate(activation3.output, y_train[32*i:32*(i+1)])
-    #print(acsm2.output, loss)
+    loss = activation3.forward(dense3.output, y_train)
+    acc = accuracy.calculate(activation3.output, y_train)
+    # print(acsm2.output, loss)
 
-    activation3.backward(activation3.output, y_train[32*i:32*(i+1)])
+    activation3.backward(activation3.output, y_train)
     dense3.backward(activation3.inputGradient)
     activation2.backward(dense3.inputGradient)
     dense2.backward(activation2.inputGradient)
     activation1.backward(dense2.inputGradient)
     dense1.backward(activation1.inputGradient)
-    #print(smLayer.inputGradient)
+    # print(smLayer.inputGradient)
 
     optimizer.preUpdateParams()
     optimizer.updateParams(dense1)
     optimizer.updateParams(dense2)
     optimizer.updateParams(dense3)
     optimizer.postUpdateParams()
-
-    if i%100 == 0:
-        print('loss:', loss)
-        print('acc:', acc)
-        print('epoch:', i)
-        print('learning rate:', optimizer.currentLearningRate)
-        L.append(loss)
-
+    '''
+"""
 
 plt.plot(L)
+plt.show()
+plt.plot(A)
+plt.show()
+plt.plot(Lr)
 plt.show()

@@ -6,6 +6,9 @@ add error handlingand input size handling
 """
 np.random.seed(0)
 class NeuronLayer:
+    """
+    Dense neuron layer
+    """
     def __init__(self, ninputs, nneurons):
         self.biases = np.zeros((1,nneurons))
         self.weights = 0.1 * np.random.randn(ninputs, nneurons)

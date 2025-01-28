@@ -100,3 +100,46 @@ class RMSPropagation:
 
     def postUpdateParams(self):
         self.iterations += 1
+
+
+class AdaptativeMomentum:
+
+    def __init__(self, learningRate=0.001, decay=0.0, epsilon=1e-7, beta1=0.9, beta2=0.999):
+        self.learningRate = learningRate
+        self.currentLearningRate = learningRate
+        self.decay = decay
+        self.epsilon = epsilon
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.iterations = 0
+
+    def preUpdateParams(self):
+        if self.decay:
+            self.currentLearningRate = self.learningRate * (1 / (1 + self.decay * self.iterations))
+
+    def updateParams(self, neuronLayer):
+
+        if not hasattr(neuronLayer, 'weightCache'):
+            neuronLayer.weightCache = np.zeros_like(neuronLayer.weights)
+            neuronLayer.weightMomentum = np.zeros_like(neuronLayer.weights)
+            neuronLayer.biasCache = np.zeros_like(neuronLayer.biases)
+            neuronLayer.biasMomentum = np.zeros_like(neuronLayer.biases)
+
+        neuronLayer.weightMomentum = self.beta1 * neuronLayer.weightMomentum + (1. - self.beta1) * neuronLayer.weightsGradient
+        neuronLayer.biasMomentum = self.beta1 * neuronLayer.biasMomentum + (1. - self.beta1) * neuronLayer.biasGradient
+
+        weightMomentumCorrected = neuronLayer.weightMomentum / (1 - self.beta1 ** (self.iterations + 1))
+        biasMomentumCorrected = neuronLayer.biasMomentum / (1 - self.beta1 ** (self.iterations + 1))
+
+        neuronLayer.weightCache = self.beta2 * neuronLayer.weightCache + (1 - self.beta2) * neuronLayer.weightsGradient ** 2
+        neuronLayer.biasCache = self.beta2 * neuronLayer.biasCache + (1 - self.beta2) * neuronLayer.biasGradient ** 2
+
+        weightCacheCorrected = neuronLayer.weightCache / (1 - self.beta2 ** (self.iterations + 1))
+        biasCacheCorrected = neuronLayer.biasCache / (1 - self.beta2 ** (self.iterations + 1))
+
+        neuronLayer.weights += - self.currentLearningRate * weightMomentumCorrected / (np.sqrt(weightCacheCorrected) + self.epsilon)
+        neuronLayer.biases += - self.currentLearningRate * biasMomentumCorrected / (np.sqrt(biasCacheCorrected) + self.epsilon)
+
+
+    def postUpdateParams(self):
+        self.iterations += 1
