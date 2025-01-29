@@ -2,6 +2,7 @@ import numpy as np # linear algebra
 import struct
 from array import array
 from os.path  import join
+import PIL
 
 #
 # MNIST Data Loader Class
@@ -82,6 +83,18 @@ mnist_dataloader = MnistDataloader(training_images_filepath, training_labels_fil
 # Show some random training and test images
 #
 
+def formatPicture(path):
+    img = PIL.Image.open(path).convert('L')
+    arrayVersion = np.array([np.array(img).flatten()]).astype('float64')
+    arrayVersion -= (np.max(arrayVersion) + np.min(arrayVersion)) / 2
+    arrayVersion /= (np.max(arrayVersion) - np.min(arrayVersion)) / 2
+    return(arrayVersion)
+
+
+
+
+
+
 x_train_formated = []
 for i in x_train:
     x_train_formated.append(np.array(i).flatten())
@@ -118,7 +131,7 @@ import Optimizer as opt
 import NeuralNetwork as nn
 
 
-neural = nn.NeuralNetwork(784, 10, [30,30])
+neural = nn.NeuralNetwork(784, 10, [60,60])
 neural.setActivationFunction(0, af.ReLU())
 neural.setActivationFunction(1, af.ReLU())
 neural.setActivationFunction(2, lf.CombinedSoftmaxCrossEntropy())

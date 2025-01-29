@@ -59,6 +59,7 @@ class NeuralNetwork:
         return(self.activationFunctions[-1].output, loss, accuracy)
 
     def predict(self, inputs):
+        ########## can bug
         """
         # not tested
         if len(self.layers) == 1:

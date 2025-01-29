@@ -75,7 +75,7 @@ class LossMeanAbsoluteError(AbstractLoss):
         output = len(prediction[0])
         self.inputGradient = np.sign(target - prediction) / output / samples
 
-class combinedLinearMeanSquaredError:
+class CombinedLinearMeanSquaredError:
 
     def __init__(self):
         self.activation = ActivationFunctions.Linear()
@@ -94,7 +94,7 @@ class combinedLinearMeanSquaredError:
         self.inputGradient = self.activation.inputGradient
 
 """combinedLinearMeanAbsoluteError seems not to work"""
-class combinedLinearMeanAbsoluteError:
+class CombinedLinearMeanAbsoluteError:
 
     def __init__(self):
         self.activation = ActivationFunctions.Linear()
@@ -136,7 +136,7 @@ class CombinedSoftmaxCrossEntropy:
 
 
 """combinedSigmoidBinaryCrossEntropy not tested"""
-class combinedSigmoidBinaryCrossEntropy:
+class CombinedSigmoidBinaryCrossEntropy:
 
     def __init__(self):
         self.activation = ActivationFunctions.Sigmoid()
